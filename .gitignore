@@ -48,3 +48,6 @@ next-env.d.ts
 # Logs
 logs
 *.log
+
+# TODO tracking
+TODO.md

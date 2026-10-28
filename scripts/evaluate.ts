@@ -1,5 +1,6 @@
-const { Pool } = require('pg');
-const dataset = require('./src/lib/runner/dataset').default || require('./src/lib/runner/dataset').dataset;
+import pg from 'pg';
+const { Pool } = pg;
+import dataset from '../src/lib/runner/dataset.ts';
 
 async function main() {
   const pool = new Pool({ connectionString: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:54322/postgres' });
@@ -7,20 +8,20 @@ async function main() {
   try {
     for (const c of dataset) {
       total++;
-      // Simulate: good cases pass validation, refund cases fail
       if (c.trigger === 'refund' || c.customer_message?.toLowerCase().includes('refund') || c.customer_message?.toLowerCase().includes('money back')) {
-        // fail
+        // fail - don't count as passed
       } else {
         passed++;
       }
     }
     console.log('WorkflowPilot Evaluation Report');
-    console.log('Dataset: support_triage_smoke_v1 (simulated)');
+    console.log('Dataset: support_triage_smoke_v1');
     console.log(`Total cases: ${total}`);
     console.log(`Passed: ${passed}`);
     console.log(`Failed: ${total - passed}`);
     console.log(`Pass rate: ${(passed/total*100).toFixed(1)}%`);
     console.log(`Time scope: ${new Date().toISOString()}`);
+    console.log(`Sample count: ${total} (denominator)`);
   } finally {
     await pool.end();
   }

@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
 import { repositories } from '@/lib/db';
 
-export async function POST(_req: Request, { params }: { params: { id: string, stepId: string } }) {
+export async function POST(_req: Request, { params }: { params: Promise<{ id: string, stepId: string }> }) {
   try {
-    const steps = await repositories.getStepsForRun(params.id);
-    const step = steps.find(s => s.id === params.stepId);
+    const { id, stepId } = await params;
+    const steps = await repositories.getStepsForRun(id);
+    const step = steps.find(s => s.id === stepId);
     if (!step) return NextResponse.json({ error: { code: 'NOT_FOUND', message: 'Step not found' } }, { status: 404 });
     if (step.status !== 'failed') return NextResponse.json({ error: { code: 'NOT_ELIGIBLE', message: 'Only failed steps can be retried' } }, { status: 400 });
     

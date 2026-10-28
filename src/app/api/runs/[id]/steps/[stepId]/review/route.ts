@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
 import { repositories } from '@/lib/db';
 
-export async function POST(req: Request, { params }: { params: { id: string, stepId: string } }) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string, stepId: string }> }) {
   try {
+    const { id, stepId } = await params;
     const body = await req.json().catch(() => ({}));
-    const steps = await repositories.getStepsForRun(params.id);
-    const step = steps.find(s => s.id === params.stepId);
+    const steps = await repositories.getStepsForRun(id);
+    const step = steps.find(s => s.id === stepId);
     if (!step) return NextResponse.json({ error: { code: 'NOT_FOUND', message: 'Step not found' } }, { status: 404 });
     if (step.status !== 'needs_review') return NextResponse.json({ error: { code: 'NOT_ELIGIBLE', message: 'Only needs_review steps can be reviewed' } }, { status: 400 });
     
@@ -18,12 +19,12 @@ export async function POST(req: Request, { params }: { params: { id: string, ste
     }
     
     // Check if run can be finalized
-    const allSteps = await repositories.getStepsForRun(params.id);
-    const requiredFailed = allSteps.some(s => s.required !== false && s.status === 'failed');
+    const allSteps = await repositories.getStepsForRun(id);
+    const requiredFailed = allSteps.some(s => (s as any).required !== false && s.status === 'failed');
     if (requiredFailed) {
-      await repositories.finalizeRun(params.id, 'failed', 'Rejected after review');
+      await repositories.finalizeRun(id, 'failed', 'Rejected after review');
     } else if (allSteps.every(s => s.status === 'succeeded' || s.status === 'skipped')) {
-      await repositories.finalizeRun(params.id, 'succeeded');
+      await repositories.finalizeRun(id, 'succeeded');
     }
     
     return NextResponse.json({ ok: true });

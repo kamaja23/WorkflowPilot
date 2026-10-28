@@ -1,5 +1,6 @@
 import './globals.css'
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import MockBanner from '@/components/MockBanner'
 
 export const metadata: Metadata = {
@@ -20,8 +21,8 @@ export default function RootLayout({
           <div className="max-w-6xl mx-auto flex items-center justify-between">
             <h1 className="text-xl font-bold">WorkflowPilot</h1>
             <nav className="flex gap-4 text-sm">
-              <a href="/">Dashboard</a>
-              <a href="/evaluations">Reliability</a>
+              <Link href="/">Dashboard</Link>
+              <Link href="/evaluations">Reliability</Link>
             </nav>
           </div>
         </header>

@@ -2,29 +2,36 @@
 
 import { useEffect, useState } from 'react';
 
-export default function RunDetail({ params }: { params: { id: string } }) {
+export default function RunDetail({ params }: { params: Promise<{ id: string }> }) {
+  const [id, setId] = useState<string>('');
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
+  useEffect(() => { params.then(p => setId(p.id)); }, [params]);
+
   const load = async () => {
-    const res = await fetch(`/api/runs/${params.id}`);
+    if (!id) return;
+    const res = await fetch(`/api/runs/${id}`);
     setData(await res.json());
     setLoading(false);
   };
 
-  useEffect(() => { load(); const t = setInterval(load, 2000); return () => clearInterval(t); }, [params.id]);
+  useEffect(() => { if (id) { load(); const t = setInterval(load, 2000); return () => clearInterval(t); } }, [id]);
 
   const retry = async (stepId: string) => {
-    await fetch(`/api/runs/${params.id}/steps/${stepId}/retry`, { method: 'POST' });
+    if (!id) return;
+    await fetch(`/api/runs/${id}/steps/${stepId}/retry`, { method: 'POST' });
     load();
   };
   const review = async (stepId: string, decision: string) => {
+    if (!id) return;
     const note = prompt('Review note (optional):') || '';
-    await fetch(`/api/runs/${params.id}/steps/${stepId}/review`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ decision, note }) });
+    await fetch(`/api/runs/${id}/steps/${stepId}/review`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ decision, note }) });
     load();
   };
   const escalate = async () => {
-    await fetch(`/api/runs/${params.id}/escalate`, { method: 'POST' });
+    if (!id) return;
+    await fetch(`/api/runs/${id}/escalate`, { method: 'POST' });
     alert('Escalation created (mock)');
     load();
   };

@@ -2,8 +2,9 @@ import { NextResponse } from 'next/server';
 import { runWorkflow } from '@/lib/runner/runner';
 import dataset from '@/lib/runner/dataset';
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const body = await req.json().catch(() => ({}));
     let input = body.input;
     if (body.case_id) {
@@ -11,7 +12,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
       if (c) input = c;
     }
     // Start execution (server-side) - await for MVP (mock is fast)
-    const run = await runWorkflow(params.id, input || {});
+    const run = await runWorkflow(id, input || {});
     return NextResponse.json({ run }, { status: 201 });
   } catch (e: any) {
     return NextResponse.json({ error: { code: 'INTERNAL', message: e.message } }, { status: 500 });

@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
 import { repositories } from '@/lib/db';
 
-export async function GET(_req: Request, { params }: { params: { id: string } }) {
+export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const run = await repositories.getRun(params.id);
+    const { id } = await params;
+    const run = await repositories.getRun(id);
     if (!run) return NextResponse.json({ error: { code: 'NOT_FOUND', message: 'Run not found' } }, { status: 404 });
-    const steps = await repositories.getStepsForRun(params.id);
+    const steps = await repositories.getStepsForRun(id);
     const stepsWithAttempts = await Promise.all(steps.map(async (s) => ({ ...s, attempts: await repositories.getStepAttempts(s.id) })));
     return NextResponse.json({ run, steps: stepsWithAttempts });
   } catch (e: any) {

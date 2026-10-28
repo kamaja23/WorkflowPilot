@@ -40,54 +40,54 @@ Deliver a keyless, demonstrable WorkflowPilot MVP (P0) following the spec: workf
 ## Slice 3: Core Pure Libs (State, Types, Providers, Validation, Runner) (COMPLETE)
 | Task | Status | Files | Verification | Notes |
 | :-- | :-- | :-- | :-- | :-- |
-| Shared types | [ ] | `src/lib/types.ts` | Compiles | Status enums, workflow types, adapter interfaces, API shapes |
-| State machine (pure) | [ ] | `src/lib/state.ts` | Unit tested | Run/step transitions, guards, `review` allowed only from `needs_review`, `retry` only from `failed`, run success requires all required succeeded |
-| LLM provider interface + mock | [ ] | `src/lib/providers/llm.ts`, `src/lib/providers/mockLlm.ts`, `src/lib/providers/selection.ts` | Deterministic + tested | Triggers refund promise on refund-like requests to hit failure case |
-| Jira/Issue tracker interface + mock | [ ] | `src/lib/integrations/issue.ts`, `src/lib/integrations/mockIssue.ts` | Deterministic external_id + simulated status | Records `integration_events` with `provider: jira-mock`, idempotency via key |
-| Validation rules + engine | [ ] | `src/lib/validation/rules.ts`, `src/lib/validation/engine.ts` | Unit tested | `required_fields`, `no_unsupported_promises`, `min_length`, `answers_request` |
-| Workflow runner (server-side) | [ ] | `src/lib/runner/runner.ts` | Integration tested | Create run+steps, execute in order, persist IO/validation/timing/status, handle needs_review/failed/succeeded, timeouts/bounded retries |
-| Evaluation logic | [ ] | `src/lib/runner/evaluation.ts`, `src/lib/runner/dataset.ts` | Unit tested | Aggregate with denominator/time scope |
+| Shared types | [x] | `src/lib/types.ts` | Compiles | Status enums, workflow types, adapter interfaces, API shapes |
+| State machine (pure) | [x] | `src/lib/state.ts` | Unit tested | Run/step transitions, guards, `review` allowed only from `needs_review`, `retry` only from `failed`, run success requires all required succeeded |
+| LLM provider interface + mock | [x] | `src/lib/providers/llm.ts`, `src/lib/providers/mockLlm.ts`, `src/lib/providers/selection.ts` | Deterministic + tested | Triggers refund promise on refund-like requests to hit failure case |
+| Jira/Issue tracker interface + mock | [x] | `src/lib/integrations/issue.ts`, `src/lib/integrations/mockIssue.ts` | Deterministic external_id + simulated status | Records `integration_events` with `provider: jira-mock`, idempotency via key |
+| Validation rules + engine | [x] | `src/lib/validation/rules.ts`, `src/lib/validation/engine.ts` | Unit tested | `required_fields`, `no_unsupported_promises`, `min_length`, `answers_request` |
+| Workflow runner (server-side) | [x] | `src/lib/runner/runner.ts` | Integration tested | Create run+steps, execute in order, persist IO/validation/timing/status, handle needs_review/failed/succeeded, timeouts/bounded retries |
+| Evaluation logic | [x] | `src/lib/runner/evaluation.ts`, `src/lib/runner/dataset.ts` | Unit tested | Aggregate with denominator/time scope |
 
 ## Slice 4: API Route Handlers (COMPLETE)
 | Task | Status | Files | Verification | Notes |
 | :-- | :-- | :-- | :-- | :-- |
-| GET `/api/workflows` | [ ] | `src/app/api/workflows/route.ts` | Returns seeded workflows |  |
-| GET `/api/workflows/[id]` | [ ] | `src/app/api/workflows/[id]/route.ts` | Returns definition |  |
-| POST `/api/workflows/[id]/runs` | [ ] | `src/app/api/workflows/[id]/runs/route.ts` | Creates run, starts execution server-side | Accepts `input` or `case_id` |
-| GET `/api/runs` | [ ] | `src/app/api/runs/route.ts` | Recent runs ordered by created_at desc |  |
-| GET `/api/runs/[id]` | [ ] | `src/app/api/runs/[id]/route.ts` | Run + steps + attempts |  |
-| POST retry step | [ ] | `src/app/api/runs/[id]/steps/[stepId]/retry/route.ts` | Creates new attempt row, preserves history, eligible only if failed | Uses `step_attempts` |
-| POST review step | [ ] | `src/app/api/runs/[id]/steps/[stepId]/review/route.ts` | Only from `needs_review`, transitions correctly | `approve`/`reject` with note |
-| POST escalate | [ ] | `src/app/api/runs/[id]/escalate/route.ts` | Mock escalation, idempotent, records event | Clearly labeled simulated |
-| GET evaluations summary | [ ] | `src/app/api/evaluations/summary/route.ts` | Returns counts + pass rate + sample count + time scope |  |
+| GET `/api/workflows` | [x] | `src/app/api/workflows/route.ts` | Returns seeded workflows |  |
+| GET `/api/workflows/[id]` | [x] | `src/app/api/workflows/[id]/route.ts` | Returns definition |  |
+| POST `/api/workflows/[id]/runs` | [x] | `src/app/api/workflows/[id]/runs/route.ts` | Creates run, starts execution server-side | Accepts `input` or `case_id` |
+| GET `/api/runs` | [x] | `src/app/api/runs/route.ts` | Recent runs ordered by created_at desc |  |
+| GET `/api/runs/[id]` | [x] | `src/app/api/runs/[id]/route.ts` | Run + steps + attempts |  |
+| POST retry step | [x] | `src/app/api/runs/[id]/steps/[stepId]/retry/route.ts` | Creates new attempt row, preserves history, eligible only if failed | Uses `step_attempts` |
+| POST review step | [x] | `src/app/api/runs/[id]/steps/[stepId]/review/route.ts` | Only from `needs_review`, transitions correctly | `approve`/`reject` with note |
+| POST escalate | [x] | `src/app/api/runs/[id]/escalate/route.ts` | Mock escalation, idempotent, records event | Clearly labeled simulated |
+| GET evaluations summary | [x] | `src/app/api/evaluations/summary/route.ts` | Returns counts + pass rate + sample count + time scope |  |
 
 ## Slice 5: UI (Dashboard, Workflow, Run Detail, Reliability) (COMPLETE)
 | Task | Status | Files | Verification | Notes |
 | :-- | :-- | :-- | :-- | :-- |
-| Layout + global styles + Mock Banner | [ ] | `src/app/layout.tsx`, `src/app/globals.css`, `src/components/MockBanner.tsx` | Banner visible when `WORKFLOWPILOT_DEMO_MODE=true` | "MOCK MODE — no live calls" |
-| Dashboard | [ ] | `src/app/page.tsx`, `src/components/KPI.tsx`, `src/components/RunList.tsx` | KPIs + recent runs + "Run demo" + "Run failure case" |  |
-| Workflow detail | [ ] | `src/app/workflows/[id]/page.tsx` | Steps, required/optional, Run button + case selector |  |
-| Run detail (timeline) | [ ] | `src/app/runs/[id]/page.tsx`, `src/components/StepTimeline.tsx`, `src/components/JsonBlock.tsx` | Expandable IO/validation/errors, retry/review/escalate actions | Poll while `running` (MVP) |
-| Reliability/Evaluations view | [ ] | `src/app/evaluations/page.tsx` | Histogram, pass rate, denominator, sample count, time window |  |
-| Shared UI components | [ ] | `src/components/*` | Reusable, typed | Badge, StatusPill, Button, etc. |
+| Layout + global styles + Mock Banner | [x] | `src/app/layout.tsx`, `src/app/globals.css`, `src/components/MockBanner.tsx` | Banner visible when `WORKFLOWPILOT_DEMO_MODE=true` | "MOCK MODE — no live calls" |
+| Dashboard | [x] | `src/app/page.tsx`, `src/components/KPI.tsx`, `src/components/RunList.tsx` | KPIs + recent runs + "Run demo" + "Run failure case" |  |
+| Workflow detail | [x] | `src/app/workflows/[id]/page.tsx` | Steps, required/optional, Run button + case selector |  |
+| Run detail (timeline) | [x] | `src/app/runs/[id]/page.tsx`, `src/components/StepTimeline.tsx`, `src/components/JsonBlock.tsx` | Expandable IO/validation/errors, retry/review/escalate actions | Poll while `running` (MVP) |
+| Reliability/Evaluations view | [x] | `src/app/evaluations/page.tsx` | Histogram, pass rate, denominator, sample count, time window |  |
+| Shared UI components | [x] | `src/components/*` | Reusable, typed | Badge, StatusPill, Button, etc. |
 
 ## Slice 6: Tests, Evaluate Script & QA (COMPLETE)
 | Task | Status | Files | Verification | Notes |
 | :-- | :-- | :-- | :-- | :-- |
-| State machine tests | [ ] | `tests/state.test.ts` | `npm test` passes | All transitions + guards |
-| Validator tests | [ ] | `tests/validators.test.ts` | Passes | Hits refund promise failure case |
-| Retry + attempt history tests | [ ] | `tests/retry.test.ts` | Passes | `step_attempts` rows preserved |
-| Evaluation aggregation tests | [ ] | `tests/evaluate.test.ts` | Passes | Denominator/time scope shown |
-| Integration run lifecycle test | [ ] | `tests/integration/run-lifecycle.test.ts` | Passes | Success + failure paths |
-| Evaluate CLI script | [ ] | `scripts/evaluate.ts` | `npm run evaluate` runs | Persists `evaluation_results`, prints counts + sample scope |
-| Lint + typecheck | [ ] | - | `npm run lint && npm run typecheck` clean |  |
+| State machine tests | [x] | `tests/state.test.ts` | `npm test` passes | All transitions + guards |
+| Validator tests | [x] | `tests/validators.test.ts` | Passes | Hits refund promise failure case |
+| Retry + attempt history tests | [x] | `tests/retry.test.ts` | Passes | `step_attempts` rows preserved |
+| Evaluation aggregation tests | [x] | `tests/evaluate.test.ts` | Passes | Denominator/time scope shown |
+| Integration run lifecycle test | [x] | `tests/integration/run-lifecycle.test.ts` | Passes | Success + failure paths |
+| Evaluate CLI script | [x] | `scripts/evaluate.ts` | `npm run evaluate` runs | Persists `evaluation_results`, prints counts + sample scope |
+| Lint + typecheck | [x] | - | `npm run lint && npm run typecheck` clean |  |
 
 ## Slice 7: Docs & Demo Readiness (COMPLETE)
 | Task | Status | Files | Verification | Notes |
 | :-- | :-- | :-- | :-- | :-- |
-| Comprehensive README | [ ] | `README.md` | Complete per acceptance | Setup, env config, architecture, DB/migrations, running dev, running eval/tests, limitations, 2-3 min demo script |
-| PRODUCT_SPEC.md reference (if needed) | [ ] | `PRODUCT_SPEC.md` | Present or referenced | Keep brief accessible |
-| Demo validation | [ ] | - | Success path works end-to-end, failure path triggers mock escalation, UI accurate | As per spec demo script |
+| Comprehensive README | [x] | `README.md` | Complete per acceptance | Setup, env config, architecture, DB/migrations, running dev, running eval/tests, limitations, 2-3 min demo script |
+| PRODUCT_SPEC.md reference (if needed) | [x] | `PRODUCT_SPEC.md` | Present or referenced | Keep brief accessible |
+| Demo validation | [x] | - | Success path works end-to-end, failure path triggers mock escalation, UI accurate | As per spec demo script |
 
 ## Acceptance Criteria (Final Check)
 - [ ] New dev can run via README with local Docker (no external accounts)
