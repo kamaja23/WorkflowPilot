@@ -1,0 +1,40 @@
+{
+  "name": "workflowpilot",
+  "version": "0.1.0",
+  "private": true,
+  "description": "WorkflowPilot — AI workflow automation & reliability platform",
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "evaluate": "tsx scripts/evaluate.ts",
+    "db:up": "docker compose up -d db postgrest",
+    "db:reset": "docker compose down -v && docker compose up -d db postgrest --build",
+    "setup": "node scripts/setup.js"
+  },
+  "dependencies": {
+    "next": "^15.4.1",
+    "pg": "^8.16.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.11",
+    "@types/node": "^24.0.0",
+    "@types/pg": "^8.15.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "eslint": "^9.0.0",
+    "eslint-config-next": "^15.4.1",
+    "tailwindcss": "^4.1.11",
+    "tsx": "^4.19.0",
+    "typescript": "^5.8.3",
+    "vitest": "^3.0.0"
+  }
+}
