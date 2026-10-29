@@ -1,6 +1,6 @@
 import pg from 'pg';
 const { Pool } = pg;
-import dataset from '../src/lib/runner/dataset.ts';
+import dataset from '../src/lib/runner/dataset';
 
 async function main() {
   const pool = new Pool({ connectionString: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:54322/postgres' });
