@@ -1,11 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { subscribeToRun } from '@/lib/realtime';
 
 export default function RunDetail({ params }: { params: Promise<{ id: string }> }) {
   const [id, setId] = useState<string>('');
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [realtime, setRealtime] = useState(false);
 
   useEffect(() => { params.then(p => setId(p.id)); }, [params]);
 
@@ -16,7 +18,15 @@ export default function RunDetail({ params }: { params: Promise<{ id: string }> 
     setLoading(false);
   };
 
-  useEffect(() => { if (id) { load(); const t = setInterval(load, 2000); return () => clearInterval(t); } }, [id]);
+  useEffect(() => { 
+    if (id) { 
+      load(); 
+      const unsub = subscribeToRun(id, () => load());
+      setRealtime(!!unsub);
+      const t = setInterval(load, 5000); 
+      return () => { clearInterval(t); unsub(); } 
+    } 
+  }, [id]);
 
   const retry = async (stepId: string) => {
     if (!id) return;
@@ -43,8 +53,8 @@ export default function RunDetail({ params }: { params: Promise<{ id: string }> 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Run Detail</h2>
-        <button onClick={escalate} className="bg-orange-600 text-white px-3 py-1 rounded">Escalate (mock)</button>
+        <h2 className="text-2xl font-bold">Run Detail {realtime && <span className="text-xs text-green-600 font-normal">● LIVE</span>}</h2>
+        <button onClick={escalate} className="bg-orange-600 text-white px-3 py-1 rounded">Escalate</button>
       </div>
       <div className="border p-4 rounded">
         <div className="grid grid-cols-4 gap-2 text-sm">

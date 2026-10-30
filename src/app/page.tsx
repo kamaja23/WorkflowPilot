@@ -1,17 +1,31 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { subscribeToRuns } from '@/lib/realtime';
 
 export default function Dashboard() {
   const [workflows, setWorkflows] = useState<any[]>([]);
   const [runs, setRuns] = useState<any[]>([]);
   const [summary, setSummary] = useState<any>(null);
+  const [realtime, setRealtime] = useState(false);
 
-  useEffect(() => {
+  const load = () => {
     fetch('/api/workflows').then(r => r.json()).then(d => setWorkflows(d.workflows || []));
     fetch('/api/runs').then(r => r.json()).then(d => setRuns(d.runs || []));
     fetch('/api/evaluations/summary').then(r => r.json()).then(d => setSummary(d));
+  };
+
+  useEffect(() => {
+    load();
+    const unsub = subscribeToRuns(() => load());
+    setRealtime(!!unsub);
+    return () => { unsub(); };
   }, []);
+
+  const getWorkflowName = (workflowId: string) => {
+    const wf = workflows.find((w: any) => w.id === workflowId);
+    return wf ? wf.name : workflowId.slice(0, 8) + '...';
+  };
 
   const runDemo = async (case_id?: string) => {
     const wfId = workflows[0]?.id || '00000000-0000-0000-0000-000000000001';
@@ -23,7 +37,7 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Dashboard</h2>
+        <h2 className="text-2xl font-bold">Dashboard {realtime && <span className="text-xs text-green-600 font-normal">● LIVE</span>}</h2>
         <div className="flex gap-2">
           <button onClick={() => runDemo()} className="bg-blue-600 text-white px-4 py-2 rounded">Run demo workflow</button>
           <button onClick={() => runDemo('support_bad_refund_01')} className="bg-red-600 text-white px-4 py-2 rounded">Run failure case</button>
@@ -39,10 +53,10 @@ export default function Dashboard() {
         <h3 className="text-lg font-semibold mb-2">Recent Runs</h3>
         <div className="border rounded overflow-hidden">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50"><tr><th className="text-left p-2">Run ID</th><th className="text-left p-2">Status</th><th className="text-left p-2">Started</th><th className="text-left p-2">Duration</th><th className="text-left p-2"></th></tr></thead>
+            <thead className="bg-gray-50"><tr><th className="text-left p-2">Run ID</th><th className="text-left p-2">Workflow</th><th className="text-left p-2">Status</th><th className="text-left p-2">Started</th><th className="text-left p-2">Duration</th><th className="text-left p-2"></th></tr></thead>
             <tbody>
               {runs.map((r) => (
-                <tr key={r.id} className="border-t"><td className="p-2 font-mono text-xs">{r.id.slice(0,8)}...</td><td className="p-2">{r.status}</td><td className="p-2">{r.started_at ? new Date(r.started_at).toLocaleString() : '-'}</td><td className="p-2">{r.duration_ms ? r.duration_ms + 'ms' : '-'}</td><td className="p-2"><a href={`/runs/${r.id}`} className="text-blue-600">View</a></td></tr>
+                <tr key={r.id} className="border-t"><td className="p-2 font-mono text-xs">{r.id.slice(0,8)}...</td><td className="p-2">{getWorkflowName(r.workflow_id)}</td><td className="p-2">{r.status}</td><td className="p-2">{r.started_at ? new Date(r.started_at).toLocaleString() : '-'}</td><td className="p-2">{r.duration_ms ? r.duration_ms + 'ms' : '-'}</td><td className="p-2"><a href={`/runs/${r.id}`} className="text-blue-600">View</a></td></tr>
               ))}
             </tbody>
           </table>
